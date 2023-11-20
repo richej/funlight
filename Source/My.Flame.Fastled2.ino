@@ -1,7 +1,6 @@
 #include "FastLED.h"
 #include <Encoder.h>
-#include <PubSubClient.h>
-#include <ESP8266WiFi.h>
+
 
 
 // NEOPIXEL https://www.tweaking4all.com/hardware/arduino/adruino-led-strip-effects/
@@ -11,17 +10,6 @@
 // ENCODER https://blog.squix.org/2016/05/esp8266-peripherals-ky-040-rotary-encoder.html
 Encoder myEnc(D1, D2);
 
-// WiFi
-const char *ssid = "lilapause"; // Enter your WiFi name
-const char *password = "CBFunker01CBFunker01";  // Enter WiFi password
-
-// MQTT Broker
-const char *mqtt_broker = "192.168.178.27";
-const char *topic = "funlight/percent";
-const int mqtt_port = 1883;
-
-WiFiClient espClient;
-PubSubClient client(espClient);
 
 long oldPosition  = -999;
 boolean isButtonPressed = false;
@@ -50,30 +38,6 @@ void setup() {
   pinMode(D3, INPUT_PULLUP);
   attachInterrupt(D3, handleKey, RISING);
 
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.println("Connecting to WiFi..");
-  }
-
-  client.setServer(mqtt_broker, mqtt_port);
-  client.setCallback(callback);
-  while (!client.connected()) {
-      String client_id = "funlight";
-      client_id += String(WiFi.macAddress());
-      Serial.printf("The client %s connects to the public mqtt broker\n", client_id.c_str());
-      if (client.connect(client_id.c_str())) {
-          Serial.println("Public emqx mqtt broker connected");
-      } else {
-          Serial.print("failed with state ");
-          Serial.print(client.state());
-          delay(2000);
-      }
-  }
-  // publish and subscribe
-  client.publish(topic, "hello emqx");
-  client.subscribe(topic);
-
 }
 
 int getCurrEffect(){
@@ -89,7 +53,6 @@ void loop() {
     Serial.println(currEffect);
     //Serial.println(newPosition);
   }
-  client.loop();
 
    // software debounce
   if (isButtonPressed && millis() - lastUpdateMillis > 50) {
@@ -147,37 +110,6 @@ void loop() {
 
 }
 
-
-void callback(char *topic, byte *payload, unsigned int length) {
-    char* str = (char* )payload; //conversion from a byte array to a character array
-    str[length]= '\0'; 
-    char* token = strtok(str, ";,");
-
-    Serial.println(str);
-    
-    int arr[4];
-    int currIdx = 0;
-    while (token != NULL) {
-      
-      Serial.println(token);
-      arr[currIdx++] = atoi(token);
-      token = strtok(NULL, ";,");
-    }
-
-    currentPercentBarValue  = arr[0];
-    currentPercentBarColor = CRGB(arr[1],arr[2],arr[3]);
-
-    currEffect = 100;
-
-  // Serial.print("Message arrived in topic: ");
-  // Serial.println(topic);
-  // Serial.print("Message:");
-  // for (int i = 0; i < length; i++) {
-  //     Serial.print((char) payload[i]);
-  // }
-  // Serial.println();
-  // Serial.println("-----------------------");
-}
 
 
 void showStrip() {
