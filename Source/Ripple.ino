@@ -51,7 +51,7 @@ void ripple() {
   }
   
   LEDS.show();
-  delay(50);
+  waitFor(50);
 }
  
  

@@ -1,6 +1,6 @@
  CRGB targetArr[ NUM_LEDS ];
  CRGB sourceArr[ NUM_LEDS ];
- int currIter = 0;
+
 
  CRGB bgColor = CRGB(170,0,60);
  CRGB targetColor = CRGB(255,0,80);
@@ -11,13 +11,11 @@
  int numberOfSticks = sizeof(lightSticks)/sizeof(float);
  
 
-void MyEffect(){
-  if(currIter >= NUM_LEDS){
-    currIter = 0;
-  }
+void MyEffect(int contrast){
+
   EVERY_N_MILLISECONDS(5) {
     for(int i=0;i<NUM_LEDS;i++){
-      targetArr[i] = fadeTowardColor(targetArr[i], sourceArr[i], 7);
+      targetArr[i] = fadeTowardColor(targetArr[i], sourceArr[i], contrast);
     }
   }
 
@@ -35,58 +33,40 @@ void MyEffect(){
         stickLenghts[k] = (int)random(1,6);
         float speed = random(100)/200.1;
         stickSpeeds[k] = speed+0.01;
-        
       }
     }
-    for(int i=0;i<NUM_LEDS;i++){
-      bool show = false;
-      for(int k=0;k<numberOfSticks;k++){
-        if(show == false && (i <= lightStickPos[k] && i >= lightStickPos[k]-stickLenghts[k])){
-          show = true;
+    for(int row=0;row<NUM_ROWS;row++){
+      for(int i=0;i<NUM_LEDS_IN_ROW;i++){
+        bool show = false;
+        for(int k=0;k<numberOfSticks;k++){
+          if(show == false && (i <= lightStickPos[k] && i >= lightStickPos[k]-stickLenghts[k])){
+            show = true;
+          }
+        }
+        if(show){
+          sourceArr[i+row*NUM_LEDS_IN_ROW] = targetColor;
+        }else{
+          sourceArr[i+row*NUM_LEDS_IN_ROW] = bgColor;
         }
       }
-      if(show){
-        sourceArr[i] = targetColor;
-      }else{
-        sourceArr[i] = bgColor;
-      }
     }
-
-    // for(int i=0;i<NUM_LEDS;i++){
-    //   if(i == currIter || i == currIter-1 || i == currIter-2 || i == currIter-3){
+      // for(int i=0;i<NUM_LEDS;i++){
+    //   bool show = false;
+    //   for(int k=0;k<numberOfSticks;k++){
+    //     if(show == false && (i <= lightStickPos[k] && i >= lightStickPos[k]-stickLenghts[k])){
+    //       show = true;
+    //     }
+    //   }
+    //   if(show){
     //     sourceArr[i] = targetColor;
     //   }else{
-    //     sourceArr[i] = bgColor;        
+    //     sourceArr[i] = bgColor;
     //   }
     // }
-    currIter++;
   }
 
   for(int i=0;i<NUM_LEDS;i++){
-    setPixel(i,targetArr[i].red,targetArr[i].green,targetArr[i].blue);
+    setPixel(NUM_LEDS-i,targetArr[i].red,targetArr[i].green,targetArr[i].blue);
   }
   showStrip();
-}
-
-CRGB fadeTowardColor( CRGB& cur, const CRGB& target, uint8_t amount)
-{
-  nblendU8TowardU8( cur.red, target.red, amount);
-  nblendU8TowardU8( cur.green, target.green, amount);
-  nblendU8TowardU8( cur.blue, target.blue, amount);
-  return cur;
-}
-
-void nblendU8TowardU8( uint8_t& cur, const uint8_t target, uint8_t amount)
-{
-  if( cur == target) return;
-
-  if( cur < target ) {
-    uint8_t delta = target - cur;
-    delta = scale8_video( delta, amount);
-    cur += delta;
-  } else {
-    uint8_t delta = cur - target;
-    delta = scale8_video( delta, amount);
-    cur -= delta;
-  }
 }

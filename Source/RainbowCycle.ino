@@ -3,14 +3,18 @@ void rainbowCycle(int SpeedDelay,int pos) {
   uint16_t i, j;
 
   for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
-    for(i=0; i< NUM_LEDS; i++) {
-      c=Wheel(((i * 256 / NUM_LEDS) + j) & 255);
-      setPixel(NUM_LEDS-i, *c, *(c+1), *(c+2));
-
-       if(pos != getCurrEffect())return;
+    for(int row=0;row<NUM_ROWS;row++){
+      for(i=0; i< NUM_LEDS_IN_ROW; i++) {
+        c=Wheel(((i * 256 / NUM_LEDS_IN_ROW) + j) & 255);
+        setPixel(NUM_LEDS_IN_ROW-i+row*NUM_LEDS_IN_ROW, *c, *(c+1), *(c+2));
+        Serial.println(i);
+        if(pos != getCurrentEffect()){
+          return;
+        }
+      }
+      showStrip();
+      waitFor(SpeedDelay);
     }
-    showStrip();
-    delay(SpeedDelay);
   }
 }
 

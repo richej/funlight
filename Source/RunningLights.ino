@@ -1,4 +1,4 @@
-void RunningLights(byte red, byte green, byte blue, int WaveDelay) {
+void RunningLights(byte red, byte green, byte blue, int WaveDelay, int pos) {
   int Position=0;
   
   for(int j=0; j<NUM_LEDS*2; j++)
@@ -13,8 +13,10 @@ void RunningLights(byte red, byte green, byte blue, int WaveDelay) {
                    ((sin(i+Position) * 127 + 128)/255)*green,
                    ((sin(i+Position) * 127 + 128)/255)*blue);
       }
+
+      if(pos != getCurrentEffect())return;
       
       showStrip();
-      delay(WaveDelay);
+      waitFor(WaveDelay);
   }
 }

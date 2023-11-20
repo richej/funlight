@@ -2,32 +2,36 @@
 void MeteorRain(byte red, byte green, byte blue, byte meteorSize, byte meteorTrailDecay, boolean meteorRandomDecay, int SpeedDelay,int pos) {  
   setAll(0,0,0);
   
-  for(int i = 0; i < NUM_LEDS+NUM_LEDS; i++) {
-    
-    
-    // fade brightness all LEDs one step
-    for(int j=0; j<NUM_LEDS; j++) {
-      if( (!meteorRandomDecay) || (random(10)>5) ) {
-        fadeToBlack(j, meteorTrailDecay );     
 
-        if(pos != getCurrEffect())return; 
+    for(int i = 0; i < NUM_LEDS_IN_ROW*2; i++) {
+    
+      // fade brightness all LEDs one step
+      for(int j=0; j<NUM_LEDS_IN_ROW; j++) {
+        if( (!meteorRandomDecay) || (random(10)>5) ) {
+          for(int row=0;row<NUM_ROWS;row++){             
+            fadeToBlack(NUM_LEDS-(j+row*NUM_LEDS_IN_ROW), meteorTrailDecay );     
+          }
+          if(pos != getCurrentEffect())return; 
+        }
       }
-    }
+      
+      // draw meteor
+      for(int j = 0; j < meteorSize; j++) {
+        if( ( i-j <NUM_LEDS_IN_ROW) && (i-j>=0) ) {
+          for(int row=0;row<NUM_ROWS;row++){  
+            setPixel((NUM_LEDS-(i+row*NUM_LEDS_IN_ROW))-(NUM_LEDS-(j+row*NUM_LEDS_IN_ROW)), red, green, blue);
+          }
+
+          if(pos != getCurrentEffect())return; 
+
+        } 
+      }
     
-    // draw meteor
-    for(int j = 0; j < meteorSize; j++) {
-      if( ( i-j <NUM_LEDS) && (i-j>=0) ) {
-        setPixel(i-j, red, green, blue);
-
-         if(pos != getCurrEffect())return; 
-
-      } 
+      showStrip();
+      waitFor(SpeedDelay);
     }
-   
-    showStrip();
-    delay(SpeedDelay);
   }
-}
+
 
 void fadeToBlack(int ledNo, byte fadeValue) {
  #ifdef ADAFRUIT_NEOPIXEL_H 
